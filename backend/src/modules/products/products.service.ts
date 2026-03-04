@@ -2,16 +2,32 @@ import type { z } from "zod";
 import type { ProductUpsertSchema, ProductStockUpdateSchema } from "./products.schemas.js";
 import { pool } from "../../services/mysql.js";
 
+const normalizeProduct = (product: any) => ({
+  ...product,
+  price: Number(product.price),
+  stock: Number(product.stock),
+  min_stock: Number(product.min_stock),
+  is_active: Number(product.is_active ?? 1)
+});
+
 export const productsService = {
   list: async () => {
-    const [rows] = await pool.query("SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC");
-    return rows;
+    try {
+      const [rows] = await pool.query("SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC");
+      return (rows as any[]).map(normalizeProduct);
+    } catch (error: any) {
+      if (error?.code === "ER_BAD_FIELD_ERROR") {
+        const [rows] = await pool.query("SELECT * FROM products ORDER BY id DESC");
+        return (rows as any[]).map(normalizeProduct);
+      }
+      throw error;
+    }
   },
   getBySlug: async (slug: string) => {
     const [rows] = await pool.query("SELECT * FROM products WHERE slug = ? LIMIT 1", [slug]);
     const product = (rows as any[])[0];
     if (!product) throw new Error("Producto no encontrado");
-    return product;
+    return normalizeProduct(product);
   },
   create: async (payload: z.infer<typeof ProductUpsertSchema>) => {
     await pool.query(
@@ -35,7 +51,7 @@ export const productsService = {
     const fields = Object.keys(payload);
     if (fields.length === 0) {
       const [rows] = await pool.query("SELECT * FROM products WHERE id = ? LIMIT 1", [id]);
-      return (rows as any[])[0];
+      return normalizeProduct((rows as any[])[0]);
     }
 
     const updates = fields.map((field) => `${field} = ?`).join(", ");
@@ -43,7 +59,7 @@ export const productsService = {
     await pool.query(`UPDATE products SET ${updates}, updated_at = NOW() WHERE id = ?`, [...values, id]);
 
     const [rows] = await pool.query("SELECT * FROM products WHERE id = ? LIMIT 1", [id]);
-    return (rows as any[])[0];
+    return normalizeProduct((rows as any[])[0]);
   },
   remove: async (id: string) => {
     await pool.query("UPDATE products SET is_active = 0, updated_at = NOW() WHERE id = ?", [id]);
@@ -51,6 +67,6 @@ export const productsService = {
   updateStock: async (id: string, payload: z.infer<typeof ProductStockUpdateSchema>) => {
     await pool.query("UPDATE products SET stock = ?, min_stock = COALESCE(?, min_stock), updated_at = NOW() WHERE id = ?", [payload.stock, payload.min_stock ?? null, id]);
     const [rows] = await pool.query("SELECT * FROM products WHERE id = ? LIMIT 1", [id]);
-    return (rows as any[])[0];
+    return normalizeProduct((rows as any[])[0]);
   }
 };

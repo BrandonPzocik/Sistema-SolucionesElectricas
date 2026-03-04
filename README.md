@@ -63,3 +63,14 @@ npm run dev
 2. Backend valida stock y registra orden en MySQL.
 3. Backend devuelve `whatsapp_url` con el detalle del pedido.
 4. Cliente abre WhatsApp y envía el mensaje al dueño para coordinar cobro.
+
+
+## Solución rápida si `/api/products` responde 500
+
+1. Confirmá que el backend está usando el mismo schema de `db/schema.sql`.
+2. Verificá `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` en `backend/.env`.
+3. Probá conexión con MySQL y que existan tablas:
+   - `products`
+   - `orders`
+   - `order_items`
+   - `stock_alerts`
