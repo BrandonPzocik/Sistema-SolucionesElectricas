@@ -7,7 +7,7 @@ export const paymentsService = {
       body: {
         items: payload.items,
         external_reference: payload.orderId,
-        notification_url: `${env.APP_ORIGIN.replace('5173', '4000')}/api/payments/webhook`,
+        notification_url: `${env.BACKEND_ORIGIN}/api/payments/webhook`,
         back_urls: {
           success: `${env.APP_ORIGIN}/checkout/success`,
           failure: `${env.APP_ORIGIN}/checkout/error`,

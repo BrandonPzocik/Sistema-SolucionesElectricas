@@ -125,7 +125,21 @@ as $$
 declare
   v_item record;
   v_product products%rowtype;
+  v_order orders%rowtype;
 begin
+  select * into v_order
+  from orders
+  where id = p_order_id
+  for update;
+
+  if not found then
+    raise exception 'Orden inexistente';
+  end if;
+
+  if v_order.payment_status = 'approved' then
+    return jsonb_build_object('ok', true, 'idempotent', true);
+  end if;
+
   for v_item in select * from order_items where order_id = p_order_id
   loop
     select * into v_product from products where id = v_item.product_id for update;
@@ -152,7 +166,7 @@ begin
       updated_at = now()
   where id = p_order_id;
 
-  return jsonb_build_object('ok', true);
+  return jsonb_build_object('ok', true, 'idempotent', false);
 end;
 $$;
 
