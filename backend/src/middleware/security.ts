@@ -5,7 +5,11 @@ import type { Express } from "express";
 import { env } from "../config/env.js";
 
 export const applySecurity = (app: Express) => {
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: env.NODE_ENV === "production"
+    })
+  );
   app.use(cors({ origin: env.APP_ORIGIN }));
   app.use(
     rateLimit({

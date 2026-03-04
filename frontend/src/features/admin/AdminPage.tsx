@@ -1,3 +1,4 @@
+import axios from "axios";
 import { useEffect, useState } from "react";
 import { api } from "../../lib/api";
 
@@ -5,11 +6,21 @@ export const AdminPage = () => {
   const [password, setPassword] = useState("");
   const [token, setToken] = useState(localStorage.getItem("admin_token") || "");
   const [dashboard, setDashboard] = useState<any>(null);
+  const [error, setError] = useState("");
 
   const login = async () => {
-    const { data } = await api.post("/admin/login", { password });
-    localStorage.setItem("admin_token", data.token);
-    setToken(data.token);
+    try {
+      setError("");
+      const { data } = await api.post("/admin/login", { password });
+      localStorage.setItem("admin_token", data.token);
+      setToken(data.token);
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.error ?? "No se pudo iniciar sesión");
+        return;
+      }
+      setError("No se pudo iniciar sesión");
+    }
   };
 
   useEffect(() => {
@@ -22,6 +33,7 @@ export const AdminPage = () => {
       <div className="mx-auto max-w-sm space-y-3 rounded border bg-white p-4">
         <h1 className="text-xl font-semibold">Admin privado</h1>
         <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full rounded border px-3 py-2" placeholder="Contraseña" />
+        {error && <p className="text-sm text-red-600">{error}</p>}
         <button onClick={login} className="w-full rounded bg-brand-500 py-2 text-white">Ingresar</button>
       </div>
     );
