@@ -1,10 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
 import { ZodError } from "zod";
-import { AppError } from "../utils/appError.js";
+
+type ErrorWithStatus = Error & { statusCode?: number };
+
+const hasStatusCode = (err: Error): err is ErrorWithStatus => {
+  return typeof (err as ErrorWithStatus).statusCode === "number";
+};
 
 export const errorHandler = (err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  if (err instanceof AppError) {
-    return res.status(err.statusCode).json({ error: err.message });
+  if (hasStatusCode(err)) {
+    return res.status(err.statusCode as number).json({ error: err.message });
   }
 
   if (err instanceof ZodError) {
