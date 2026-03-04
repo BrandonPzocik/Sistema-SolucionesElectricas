@@ -1,31 +1,34 @@
-# Sistema Soluciones Eléctricas - E-commerce escalable
+# Sistema Soluciones Eléctricas - E-commerce simplificado (MySQL + phpMyAdmin)
 
-Arquitectura completa para un e-commerce moderno (mobile-first) de productos eléctricos con React + Tailwind en frontend, Node.js + TypeScript en backend, Supabase/PostgreSQL, Mercado Pago, WhatsApp y panel de administración privado.
+Versión simplificada para empezar rápido con base SQL clásica (MySQL), compra por carrito y envío del pedido por WhatsApp al dueño para coordinar cobro manual.
 
 ## Monorepo
 
-- `frontend/`: SPA React + Vite + Tailwind, catálogo, carrito, checkout, admin.
-- `backend/`: API REST en Node.js/TypeScript con módulos de productos, órdenes, stock, pagos y admin.
-- `shared/`: tipos compartidos y contratos de API.
-- `db/`: schema SQL, triggers y funciones transaccionales para stock en tiempo real.
+- `frontend/`: SPA React + Vite + Tailwind (catálogo, carrito, checkout y admin).
+- `backend/`: API REST en Node.js/TypeScript.
+- `shared/`: tipos compartidos y contratos.
+- `db/`: scripts SQL para crear estructura y seed en phpMyAdmin.
 
-## Características implementadas en la arquitectura
+## Qué queda funcionando ahora
 
-- Catálogo y detalle de producto con stock en tiempo real.
+- Catálogo de productos con stock.
 - Carrito sin login de cliente.
-- Checkout con Mercado Pago y opción efectivo.
-- Webhook para confirmación automática de pago.
-- Descuento de stock transaccional al confirmar pago.
-- Bloqueo por falta de stock y anti-overselling por concurrencia.
-- Redirección automática a WhatsApp con mensaje dinámico.
-- Admin privado con token/JWT para CRUD de productos y stock.
-- Métricas de ventas e ingresos.
-- Seguridad base: Helmet, CORS, rate-limit, validaciones Zod.
-- SEO base y lazy loading de imágenes.
+- Checkout simple.
+- Compra en efectivo (`cash`) con link automático a WhatsApp para avisar al dueño.
+- Panel admin con login por contraseña.
+- Seed de productos de ejemplo.
+
+> Usuario admin: contraseña inicial `admin123`.
 
 ## Quick start
 
-### 1) Backend
+### 1) Base de datos (phpMyAdmin)
+
+1. Crear una base MySQL (si no existe).
+2. Ejecutar `db/schema.sql`.
+3. Ejecutar `db/seed.sql`.
+
+### 2) Backend
 
 ```bash
 cd backend
@@ -34,7 +37,7 @@ npm install
 npm run dev
 ```
 
-### 2) Frontend
+### 3) Frontend
 
 ```bash
 cd frontend
@@ -43,26 +46,31 @@ npm install
 npm run dev
 ```
 
-### 3) Base de datos
+## Variables del backend (`backend/.env`)
 
-Ejecutar `db/schema.sql` en Supabase SQL Editor.
-
-## Variables clave
-
-- `SUPABASE_URL`
-- `SUPABASE_SERVICE_ROLE_KEY`
-- `MERCADO_PAGO_ACCESS_TOKEN`
-- `MERCADO_PAGO_WEBHOOK_SECRET`
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
 - `WHATSAPP_PHONE`
 - `ADMIN_JWT_SECRET`
-- `ADMIN_PASSWORD_HASH`
+- `ADMIN_PASSWORD_HASH` (por defecto: `admin123`)
 
-## Flujo de orden
+## Flujo de compra actual
 
-1. Frontend valida carrito y crea orden (`POST /api/orders`).
-2. Backend valida stock y precio desde DB.
-3. Si método MP: crea preferencia y devuelve `init_point`.
-4. Mercado Pago notifica webhook.
-5. Backend confirma pago, ejecuta transacción de descuento de stock.
-6. Backend actualiza orden y retorna URL de WhatsApp.
-7. Frontend redirige automáticamente al link `wa.me`.
+1. Frontend envía orden a `POST /api/orders` con `payment_method: "cash"`.
+2. Backend valida stock y registra orden en MySQL.
+3. Backend devuelve `whatsapp_url` con el detalle del pedido.
+4. Cliente abre WhatsApp y envía el mensaje al dueño para coordinar cobro.
+
+
+## Solución rápida si `/api/products` responde 500
+
+1. Confirmá que el backend está usando el mismo schema de `db/schema.sql`.
+2. Verificá `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` en `backend/.env`.
+3. Probá conexión con MySQL y que existan tablas:
+   - `products`
+   - `orders`
+   - `order_items`
+   - `stock_alerts`
