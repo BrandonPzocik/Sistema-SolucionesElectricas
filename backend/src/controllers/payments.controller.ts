@@ -17,7 +17,7 @@ export const paymentsController = {
     return res.status(200).json({ ok: true });
   },
   whatsappRedirectData: async (req: Request, res: Response) => {
-    const order = await ordersService.getById(req.params.id);
+    const order = await ordersService.getById(String(req.params.id));
     const message = buildOrderMessage({
       orderNumber: order.order_number,
       status: order.status,
