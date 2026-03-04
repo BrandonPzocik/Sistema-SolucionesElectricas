@@ -8,7 +8,7 @@ export const productsController = {
     res.json(data);
   },
   get: async (req: Request, res: Response) => {
-    const data = await productsService.getBySlug(req.params.slug);
+    const data = await productsService.getBySlug(String(req.params.slug));
     res.json(data);
   },
   create: async (req: Request, res: Response) => {
@@ -18,16 +18,16 @@ export const productsController = {
   },
   update: async (req: Request, res: Response) => {
     const payload = ProductUpsertSchema.partial().parse(req.body);
-    const data = await productsService.update(req.params.id, payload);
+    const data = await productsService.update(String(req.params.id), payload);
     res.json(data);
   },
   remove: async (req: Request, res: Response) => {
-    await productsService.remove(req.params.id);
+    await productsService.remove(String(req.params.id));
     res.status(204).send();
   },
   updateStock: async (req: Request, res: Response) => {
     const payload = ProductStockUpdateSchema.parse(req.body);
-    const data = await productsService.updateStock(req.params.id, payload);
+    const data = await productsService.updateStock(String(req.params.id), payload);
     res.json(data);
   }
 };
