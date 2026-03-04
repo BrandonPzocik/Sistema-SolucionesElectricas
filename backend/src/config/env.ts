@@ -7,6 +7,7 @@ const EnvSchema = z.object({
   PORT: z.coerce.number().default(4000),
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
   APP_ORIGIN: z.string().url(),
+  BACKEND_ORIGIN: z.string().url(),
   SUPABASE_URL: z.string().url(),
   SUPABASE_SERVICE_ROLE_KEY: z.string().min(1),
   MERCADO_PAGO_ACCESS_TOKEN: z.string().min(1),
