@@ -8,6 +8,14 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 
 export const router = Router();
 
+router.get("/", (_req, res) => {
+  res.json({
+    ok: true,
+    message: "API running",
+    endpoints: ["GET /api/health", "POST /api/admin/login"]
+  });
+});
+
 router.get("/health", (_req, res) => res.json({ ok: true }));
 
 router.get("/products", asyncHandler(productsController.list));
