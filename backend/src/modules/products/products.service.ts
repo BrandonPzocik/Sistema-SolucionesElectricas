@@ -4,22 +4,31 @@ import { pool } from "../../services/mysql.js";
 
 const normalizeProduct = (product: any) => ({
   ...product,
-  price: Number(product.price),
-  stock: Number(product.stock),
-  min_stock: Number(product.min_stock),
-  is_active: Number(product.is_active ?? 1)
+  price: Number(product?.price ?? 0),
+  stock: Number(product?.stock ?? 0),
+  min_stock: Number(product?.min_stock ?? 0),
+  is_active: Number(product?.is_active ?? 1)
 });
+
+const getProductColumns = async () => {
+  const [cols] = await pool.query("SHOW COLUMNS FROM products");
+  return new Set((cols as any[]).map((c) => String(c.Field)));
+};
 
 export const productsService = {
   list: async () => {
     try {
-      const [rows] = await pool.query("SELECT * FROM products WHERE is_active = 1 ORDER BY created_at DESC");
+      const columns = await getProductColumns();
+      const where = columns.has("is_active") ? " WHERE is_active = 1" : "";
+
+      let orderBy = "";
+      if (columns.has("created_at")) orderBy = " ORDER BY created_at DESC";
+      else if (columns.has("id")) orderBy = " ORDER BY id DESC";
+
+      const [rows] = await pool.query(`SELECT * FROM products${where}${orderBy}`);
       return (rows as any[]).map(normalizeProduct);
     } catch (error: any) {
-      if (error?.code === "ER_BAD_FIELD_ERROR") {
-        const [rows] = await pool.query("SELECT * FROM products ORDER BY id DESC");
-        return (rows as any[]).map(normalizeProduct);
-      }
+      if (error?.code === "ER_NO_SUCH_TABLE") return [];
       throw error;
     }
   },
