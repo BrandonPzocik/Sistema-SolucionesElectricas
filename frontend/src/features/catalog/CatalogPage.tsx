@@ -1,31 +1,55 @@
-import { Link } from "react-router-dom";
-import { Helmet } from "react-helmet-async";
-import { useProducts } from "../../hooks/useProducts";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { api } from "../../lib/api";
+import { whatsappUrl } from "../../lib/whatsapp";
+import { Producto } from "../../types";
+
+type PreferenceResponse = { init_point: string };
 
 export const CatalogPage = () => {
-  const { data, isLoading } = useProducts();
+  const [selected, setSelected] = useState<Producto | null>(null);
+  const { data, isLoading } = useQuery({ queryKey: ["productos"], queryFn: () => api.get<Producto[]>("/products") });
+
+  const buyWithMercadoPago = async (producto: Producto) => {
+    const response = await api.post<PreferenceResponse>("/payments/create-preference", {
+      nombre: producto.nombre,
+      precio: producto.precio,
+      cantidad: 1
+    });
+
+    window.location.href = response.init_point;
+  };
 
   if (isLoading) return <p>Cargando productos...</p>;
 
   return (
-    <>
-      <Helmet>
-        <title>Catálogo | Soluciones Eléctricas</title>
-        <meta name="description" content="Compra protectores de tensión, térmicas y disyuntores con stock real." />
-      </Helmet>
-      <section className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        {data?.map((product: any) => (
-          <article key={product.id} className="rounded-xl border bg-white p-3 shadow-sm">
-            <img loading="lazy" src={product.image_url} alt={product.name} className="mb-2 aspect-square w-full rounded object-cover" />
-            <h2 className="line-clamp-2 text-sm font-semibold">{product.name}</h2>
-            <p className="mt-1 text-xs text-slate-500">Stock: {product.stock}</p>
-            <p className="mt-1 font-bold text-brand-900">${product.price}</p>
-            <Link className="mt-3 block rounded bg-brand-500 px-2 py-2 text-center text-sm text-white" to={`/producto/${product.slug}`}>
-              Ver producto
-            </Link>
+    <section>
+      <h2 className="mb-4 text-2xl font-bold">Productos</h2>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {data?.map((product) => (
+          <article key={product.id} className="rounded-2xl bg-white p-4 shadow-sm">
+            <img src={product.imagen} alt={product.nombre} className="aspect-square w-full rounded-xl object-cover" />
+            <h3 className="mt-3 text-lg font-bold">{product.nombre}</h3>
+            <p className="mt-1 line-clamp-2 text-sm text-slate-600">{product.descripcion}</p>
+            <p className="mt-2 text-xl font-extrabold text-[#111111]">${product.precio}</p>
+            <button className="mt-3 w-full rounded-xl bg-[#FFC107] py-3 font-bold" onClick={() => setSelected(product)}>Comprar</button>
           </article>
         ))}
-      </section>
-    </>
+      </div>
+
+      {selected && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-black/50 p-4">
+          <div className="w-full max-w-sm rounded-2xl bg-white p-5">
+            <h4 className="text-lg font-bold">Elegir método de pago</h4>
+            <p className="mb-4 text-sm text-slate-600">{selected.nombre} - ${selected.precio}</p>
+            <div className="space-y-2">
+              <button onClick={() => buyWithMercadoPago(selected)} className="w-full rounded-xl bg-[#111111] py-3 font-semibold text-white">Mercado Pago</button>
+              <a href={whatsappUrl(`Hola, quiero comprar el siguiente producto:\n\nProducto: ${selected.nombre}\nPrecio: ${selected.precio}\n\nQuiero pagar en efectivo.`)} className="block w-full rounded-xl border py-3 text-center font-semibold">Efectivo</a>
+              <button onClick={() => setSelected(null)} className="w-full py-2 text-sm">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </section>
   );
 };

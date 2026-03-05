@@ -1,76 +1,64 @@
-# Sistema Soluciones Eléctricas - E-commerce simplificado (MySQL + phpMyAdmin)
+# Soluciones Eléctricas - Catálogo web (React + Supabase + Mercado Pago)
 
-Versión simplificada para empezar rápido con base SQL clásica (MySQL), compra por carrito y envío del pedido por WhatsApp al dueño para coordinar cobro manual.
+Aplicación mobile-first para mostrar productos y servicios eléctricos, comprar con Mercado Pago o efectivo y continuar la conversación por WhatsApp sin registro de usuario.
 
-## Monorepo
+## Stack
 
-- `frontend/`: SPA React + Vite + Tailwind (catálogo, carrito, checkout y admin).
-- `backend/`: API REST en Node.js/TypeScript.
-- `shared/`: tipos compartidos y contratos.
-- `db/`: scripts SQL para crear estructura y seed en phpMyAdmin.
+- Frontend: React + Vite + TailwindCSS
+- Backend API: Node + Express + TypeScript
+- Base de datos e imágenes: Supabase + Supabase Storage
+- Pagos: Mercado Pago Checkout (preferencias)
+- Mensajería: links dinámicos de WhatsApp
 
-## Qué queda funcionando ahora
+## Estructura
 
-- Catálogo de productos con stock.
-- Carrito sin login de cliente.
-- Checkout simple.
-- Compra en efectivo (`cash`) con link automático a WhatsApp para avisar al dueño.
-- Panel admin con login por contraseña.
-- Seed de productos de ejemplo.
+- `frontend/`: web app con Home, Productos, Servicios, Gracias y `/admin`.
+- `backend/`: API para catálogo, panel admin, storage y preferencias de Mercado Pago.
+- `db/supabase_schema.sql`: tablas `productos` y `servicios`.
 
-> Usuario admin: contraseña inicial `admin123`.
+## Variables de entorno
 
-## Quick start
+### `backend/.env`
 
-### 1) Base de datos (phpMyAdmin)
+```env
+PORT=4000
+APP_ORIGIN=http://localhost:5173
+SUPABASE_URL=
+SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_STORAGE_BUCKET=catalogo
+MERCADO_PAGO_ACCESS_TOKEN=
+WHATSAPP_PHONE=5491112345678
+ADMIN_PANEL_TOKEN=admin-dev-token
+```
 
-1. Crear una base MySQL (si no existe).
-2. Ejecutar `db/schema.sql`.
-3. Ejecutar `db/seed.sql`.
+### `frontend/.env`
 
-### 2) Backend
+```env
+VITE_API_URL=http://localhost:4000/api
+VITE_WHATSAPP_PHONE=5491112345678
+VITE_ADMIN_TOKEN=admin-dev-token
+VITE_SUPABASE_URL=
+```
+
+## Ejecutar
 
 ```bash
 cd backend
-cp .env.example .env
 npm install
 npm run dev
 ```
-
-### 3) Frontend
 
 ```bash
 cd frontend
-cp .env.example .env
 npm install
 npm run dev
 ```
 
-## Variables del backend (`backend/.env`)
+## Flujo de compra
 
-- `DB_HOST`
-- `DB_PORT`
-- `DB_USER`
-- `DB_PASSWORD`
-- `DB_NAME`
-- `WHATSAPP_PHONE`
-- `ADMIN_JWT_SECRET`
-- `ADMIN_PASSWORD_HASH` (por defecto: `admin123`)
-
-## Flujo de compra actual
-
-1. Frontend envía orden a `POST /api/orders` con `payment_method: "cash"`.
-2. Backend valida stock y registra orden en MySQL.
-3. Backend devuelve `whatsapp_url` con el detalle del pedido.
-4. Cliente abre WhatsApp y envía el mensaje al dueño para coordinar cobro.
-
-
-## Solución rápida si `/api/products` responde 500
-
-1. Confirmá que el backend está usando el mismo schema de `db/schema.sql`.
-2. Verificá `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, `DB_NAME` en `backend/.env`.
-3. Probá conexión con MySQL y que existan tablas:
-   - `products`
-   - `orders`
-   - `order_items`
-   - `stock_alerts`
+1. Usuario toca **Comprar** desde Productos.
+2. El modal ofrece **Mercado Pago** o **Efectivo**.
+3. Mercado Pago: frontend llama `POST /api/payments/create-preference` y redirige a `init_point`.
+4. Retorno exitoso a `/gracias` con CTA para enviar comprobante por WhatsApp.
+5. Efectivo: abre WhatsApp directamente con el resumen del producto.

@@ -1,18 +1,16 @@
 import { Link, Outlet } from "react-router-dom";
-import { useCartStore } from "../features/cart/cart.store";
 
-export const Layout = () => {
-  const count = useCartStore((s) => s.items.reduce((acc, i) => acc + i.quantity, 0));
-
-  return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between p-4">
-          <Link className="text-lg font-bold text-brand-900" to="/">Soluciones Eléctricas</Link>
-          <Link className="rounded bg-brand-500 px-3 py-2 text-sm text-white" to="/checkout">Carrito ({count})</Link>
+export const Layout = () => (
+  <div className="min-h-screen bg-slate-100 text-[#111111]">
+    <header className="sticky top-0 z-30 border-b bg-white/95 backdrop-blur">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <Link className="text-lg font-bold" to="/">Soluciones Eléctricas</Link>
+        <div className="flex gap-2 text-sm">
+          <Link to="/productos" className="rounded-full bg-[#FFC107] px-3 py-2 font-semibold">Productos</Link>
+          <Link to="/servicios" className="rounded-full border px-3 py-2 font-semibold">Servicios</Link>
         </div>
-      </header>
-      <main className="mx-auto max-w-6xl p-4"><Outlet /></main>
-    </div>
-  );
-};
+      </nav>
+    </header>
+    <main className="mx-auto max-w-6xl px-4 py-4"><Outlet /></main>
+  </div>
+);
