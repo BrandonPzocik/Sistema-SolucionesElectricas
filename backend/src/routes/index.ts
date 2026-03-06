@@ -24,6 +24,21 @@ const serviceSchema = z.object({
   activo: z.boolean().default(true)
 });
 
+const ensureBucket = async () => {
+  const { data: buckets, error: listError } = await supabaseAdmin.storage.listBuckets();
+  if (listError) throw new Error(`No se pudo listar buckets: ${listError.message}`);
+
+  const exists = buckets?.some((bucket) => bucket.name === env.SUPABASE_STORAGE_BUCKET);
+  if (exists) return;
+
+  const { error: createError } = await supabaseAdmin.storage.createBucket(env.SUPABASE_STORAGE_BUCKET, {
+    public: true,
+    fileSizeLimit: "10MB"
+  });
+
+  if (createError) throw new Error(`No se pudo crear bucket '${env.SUPABASE_STORAGE_BUCKET}': ${createError.message}`);
+};
+
 router.get("/health", (_req, res) => res.json({ ok: true }));
 
 router.get(
@@ -154,9 +169,14 @@ router.delete(
 router.post(
   "/admin/storage/upload-url",
   asyncHandler(async (req, res) => {
-    const schema = z.object({ fileName: z.string(), contentType: z.string() });
+    const schema = z.object({ fileName: z.string().min(1), contentType: z.string().min(1) });
     const { fileName } = schema.parse(req.body);
-    const path = `catalogo/${Date.now()}-${fileName}`;
+
+    await ensureBucket();
+
+    const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, "-");
+    const path = `uploads/${Date.now()}-${sanitizedFileName}`;
+
     const { data, error } = await supabaseAdmin.storage.from(env.SUPABASE_STORAGE_BUCKET).createSignedUploadUrl(path);
     if (error) return res.status(400).json({ message: error.message });
 

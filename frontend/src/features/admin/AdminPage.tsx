@@ -117,6 +117,16 @@ export const AdminPage = () => {
     }
   };
 
+
+  const handleFileUpload = async (file: File, target: "product" | "service") => {
+    setFeedback("");
+    try {
+      await uploadImage(file, target);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo subir la imagen.";
+      setFeedback(message);
+    }
+  };
   if (!token) return <Navigate to="/" replace />;
 
   const productValidationError = (() => {
@@ -179,7 +189,7 @@ export const AdminPage = () => {
             <textarea className="rounded border p-2" placeholder="Descripción" value={productForm.descripcion} onChange={(e) => setProductForm({ ...productForm, descripcion: e.target.value })} required />
             <input className="rounded border p-2" type="number" placeholder="Precio" value={productForm.precio} onChange={(e) => setProductForm({ ...productForm, precio: e.target.value })} min={1} required />
             <input className="rounded border p-2" type="number" placeholder="Stock" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })} min={0} required />
-            <input className="rounded border p-2" type="file" accept="image/*" onChange={async (e) => e.target.files?.[0] && (await uploadImage(e.target.files[0], "product"))} />
+            <input className="rounded border p-2" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "product")} />
             <button disabled={createProduct.isPending || !!productValidationError} className="rounded bg-[#FFC107] py-2 font-bold disabled:opacity-60">Agregar producto</button>
           </form>
 
@@ -198,7 +208,7 @@ export const AdminPage = () => {
           <form onSubmit={submitService} className="grid gap-2 rounded-2xl bg-white p-4 shadow-sm">
             <input className="rounded border p-2" placeholder="Nombre del servicio" value={serviceForm.nombre} onChange={(e) => setServiceForm({ ...serviceForm, nombre: e.target.value })} required />
             <textarea className="rounded border p-2" placeholder="Descripción" value={serviceForm.descripcion} onChange={(e) => setServiceForm({ ...serviceForm, descripcion: e.target.value })} required />
-            <input className="rounded border p-2" type="file" accept="image/*" onChange={async (e) => e.target.files?.[0] && (await uploadImage(e.target.files[0], "service"))} />
+            <input className="rounded border p-2" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "service")} />
             <button disabled={createService.isPending || !!serviceValidationError} className="rounded bg-[#FFC107] py-2 font-bold disabled:opacity-60">Agregar servicio</button>
           </form>
 
