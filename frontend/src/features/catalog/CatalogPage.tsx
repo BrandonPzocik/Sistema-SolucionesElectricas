@@ -8,16 +8,27 @@ type PreferenceResponse = { init_point: string };
 
 export const CatalogPage = () => {
   const [selected, setSelected] = useState<Producto | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string>("");
   const { data, isLoading } = useQuery({ queryKey: ["productos"], queryFn: () => api.get<Producto[]>("/products") });
 
   const buyWithMercadoPago = async (producto: Producto) => {
-    const response = await api.post<PreferenceResponse>("/payments/create-preference", {
-      nombre: producto.nombre,
-      precio: producto.precio,
-      cantidad: 1
-    });
+    setCheckoutError("");
+    try {
+      const response = await api.post<PreferenceResponse>("/payments/create-preference", {
+        nombre: producto.nombre,
+        precio: producto.precio,
+        cantidad: 1
+      });
 
-    window.location.href = response.init_point;
+      if (!response?.init_point) {
+        throw new Error("Mercado Pago no devolvió una URL de pago válida.");
+      }
+
+      window.location.href = response.init_point;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "No se pudo iniciar el pago con Mercado Pago.";
+      setCheckoutError(message);
+    }
   };
 
   if (isLoading) return <p>Cargando productos...</p>;
@@ -42,10 +53,19 @@ export const CatalogPage = () => {
           <div className="w-full max-w-sm rounded-2xl bg-white p-5">
             <h4 className="text-lg font-bold">Elegir método de pago</h4>
             <p className="mb-4 text-sm text-slate-600">{selected.nombre} - ${selected.precio}</p>
+            {checkoutError ? <p className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-700">{checkoutError}</p> : null}
             <div className="space-y-2">
               <button onClick={() => buyWithMercadoPago(selected)} className="w-full rounded-xl bg-[#111111] py-3 font-semibold text-white">Mercado Pago</button>
               <a href={whatsappUrl(`Hola, quiero comprar el siguiente producto:\n\nProducto: ${selected.nombre}\nPrecio: ${selected.precio}\n\nQuiero pagar en efectivo.`)} className="block w-full rounded-xl border py-3 text-center font-semibold">Efectivo</a>
-              <button onClick={() => setSelected(null)} className="w-full py-2 text-sm">Cancelar</button>
+              <button
+                onClick={() => {
+                  setCheckoutError("");
+                  setSelected(null);
+                }}
+                className="w-full py-2 text-sm"
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
