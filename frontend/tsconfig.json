@@ -11,5 +11,18 @@
       "@/*": ["*"]
     }
   },
-  "include": ["src"]
+  "include": [
+    "src/main.tsx",
+    "src/vite-env.d.ts",
+    "src/app/**/*.tsx",
+    "src/components/**/*.tsx",
+    "src/features/home/**/*.tsx",
+    "src/features/catalog/**/*.tsx",
+    "src/features/services/**/*.tsx",
+    "src/features/gracias/**/*.tsx",
+    "src/features/admin/**/*.tsx",
+    "src/lib/**/*.ts",
+    "src/types.ts",
+    "src/styles/**/*.css"
+  ]
 }
