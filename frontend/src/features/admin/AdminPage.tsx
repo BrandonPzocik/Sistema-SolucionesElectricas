@@ -6,20 +6,45 @@ import { Producto, Servicio } from "../../types";
 
 const token = import.meta.env.VITE_ADMIN_TOKEN ?? "";
 
-const initialProductForm = {
+type ProductFormState = {
+  nombre: string;
+  descripcion: string;
+  precio: string;
+  stock: string;
+  imagen: string;
+  activo: boolean;
+};
+
+type ServiceFormState = {
+  nombre: string;
+  descripcion: string;
+  imagen: string;
+  activo: boolean;
+};
+
+const initialProductForm: ProductFormState = {
   nombre: "",
   descripcion: "",
-  precio: 0,
-  stock: 0,
+  precio: "",
+  stock: "",
   imagen: "",
   activo: true
 };
 
-const initialServiceForm = {
+const initialServiceForm: ServiceFormState = {
   nombre: "",
   descripcion: "",
   imagen: "",
   activo: true
+};
+
+const isValidHttpUrl = (value: string) => {
+  try {
+    const parsed = new URL(value);
+    return parsed.protocol === "http:" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
 };
 
 export const AdminPage = () => {
@@ -27,8 +52,8 @@ export const AdminPage = () => {
   const isServicesRoute = location.pathname === "/admin/services";
   const queryClient = useQueryClient();
 
-  const [productForm, setProductForm] = useState(initialProductForm);
-  const [serviceForm, setServiceForm] = useState(initialServiceForm);
+  const [productForm, setProductForm] = useState<ProductFormState>(initialProductForm);
+  const [serviceForm, setServiceForm] = useState<ServiceFormState>(initialServiceForm);
   const [feedback, setFeedback] = useState<string>("");
 
   const headers = useMemo(() => ({ "x-admin-token": token }), []);
@@ -37,7 +62,12 @@ export const AdminPage = () => {
   const { data: services } = useQuery({ queryKey: ["admin-services"], queryFn: () => api.get<Servicio[]>("/admin/services", headers) });
 
   const createProduct = useMutation({
-    mutationFn: () => api.post("/admin/products", productForm, headers),
+    mutationFn: () =>
+      api.post("/admin/products", {
+        ...productForm,
+        precio: Number(productForm.precio),
+        stock: Number(productForm.stock)
+      }, headers),
     onSuccess: () => {
       setProductForm(initialProductForm);
       setFeedback("Producto guardado correctamente.");
@@ -80,21 +110,49 @@ export const AdminPage = () => {
 
     if (target === "product") {
       setProductForm((prev) => ({ ...prev, imagen: signed.publicUrl }));
+      setFeedback("Imagen de producto cargada.");
     } else {
       setServiceForm((prev) => ({ ...prev, imagen: signed.publicUrl }));
+      setFeedback("Imagen de servicio cargada.");
     }
   };
 
   if (!token) return <Navigate to="/" replace />;
 
+  const productValidationError = (() => {
+    if (productForm.nombre.trim().length < 2) return "El nombre del producto debe tener al menos 2 caracteres.";
+    if (productForm.descripcion.trim().length < 5) return "La descripción del producto debe tener al menos 5 caracteres.";
+    if (!productForm.precio || Number(productForm.precio) <= 0) return "Ingresá un precio válido mayor a 0.";
+    if (productForm.stock === "" || Number(productForm.stock) < 0) return "Ingresá un stock válido (0 o mayor).";
+    if (!isValidHttpUrl(productForm.imagen)) return "Debés subir una imagen válida antes de guardar el producto.";
+    return "";
+  })();
+
+  const serviceValidationError = (() => {
+    if (serviceForm.nombre.trim().length < 2) return "El nombre del servicio debe tener al menos 2 caracteres.";
+    if (serviceForm.descripcion.trim().length < 5) return "La descripción del servicio debe tener al menos 5 caracteres.";
+    if (!isValidHttpUrl(serviceForm.imagen)) return "Debés subir una imagen válida antes de guardar el servicio.";
+    return "";
+  })();
+
   const submitProduct = (e: FormEvent) => {
     e.preventDefault();
+    if (productValidationError) {
+      setFeedback(productValidationError);
+      return;
+    }
+
     setFeedback("");
     createProduct.mutate();
   };
 
   const submitService = (e: FormEvent) => {
     e.preventDefault();
+    if (serviceValidationError) {
+      setFeedback(serviceValidationError);
+      return;
+    }
+
     setFeedback("");
     createService.mutate();
   };
@@ -119,10 +177,10 @@ export const AdminPage = () => {
           <form onSubmit={submitProduct} className="grid gap-2 rounded-2xl bg-white p-4 shadow-sm">
             <input className="rounded border p-2" placeholder="Nombre" value={productForm.nombre} onChange={(e) => setProductForm({ ...productForm, nombre: e.target.value })} required />
             <textarea className="rounded border p-2" placeholder="Descripción" value={productForm.descripcion} onChange={(e) => setProductForm({ ...productForm, descripcion: e.target.value })} required />
-            <input className="rounded border p-2" type="number" placeholder="Precio" value={productForm.precio} onChange={(e) => setProductForm({ ...productForm, precio: Number(e.target.value) })} min={1} required />
-            <input className="rounded border p-2" type="number" placeholder="Stock" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: Number(e.target.value) })} min={0} required />
+            <input className="rounded border p-2" type="number" placeholder="Precio" value={productForm.precio} onChange={(e) => setProductForm({ ...productForm, precio: e.target.value })} min={1} required />
+            <input className="rounded border p-2" type="number" placeholder="Stock" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })} min={0} required />
             <input className="rounded border p-2" type="file" accept="image/*" onChange={async (e) => e.target.files?.[0] && (await uploadImage(e.target.files[0], "product"))} />
-            <button disabled={createProduct.isPending} className="rounded bg-[#FFC107] py-2 font-bold disabled:opacity-60">Agregar producto</button>
+            <button disabled={createProduct.isPending || !!productValidationError} className="rounded bg-[#FFC107] py-2 font-bold disabled:opacity-60">Agregar producto</button>
           </form>
 
           <div className="rounded-2xl bg-white p-4 shadow-sm">
@@ -141,7 +199,7 @@ export const AdminPage = () => {
             <input className="rounded border p-2" placeholder="Nombre del servicio" value={serviceForm.nombre} onChange={(e) => setServiceForm({ ...serviceForm, nombre: e.target.value })} required />
             <textarea className="rounded border p-2" placeholder="Descripción" value={serviceForm.descripcion} onChange={(e) => setServiceForm({ ...serviceForm, descripcion: e.target.value })} required />
             <input className="rounded border p-2" type="file" accept="image/*" onChange={async (e) => e.target.files?.[0] && (await uploadImage(e.target.files[0], "service"))} />
-            <button disabled={createService.isPending} className="rounded bg-[#FFC107] py-2 font-bold disabled:opacity-60">Agregar servicio</button>
+            <button disabled={createService.isPending || !!serviceValidationError} className="rounded bg-[#FFC107] py-2 font-bold disabled:opacity-60">Agregar servicio</button>
           </form>
 
           <div className="rounded-2xl bg-white p-4 shadow-sm">

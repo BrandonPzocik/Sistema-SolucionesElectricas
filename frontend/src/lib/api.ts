@@ -11,14 +11,26 @@ const normalizeError = (error: unknown) => {
 };
 
 const parseResponseError = async (res: Response) => {
-  let detail = "";
   try {
-    detail = await res.text();
-  } catch {
-    detail = "";
-  }
+    const body = await res.json();
+    if (body?.message && typeof body.message === "string") return body.message;
 
-  return detail || `Error HTTP ${res.status}`;
+    if (body?.error === "Validation error" && body?.detail?.fieldErrors) {
+      const fieldErrors = body.detail.fieldErrors as Record<string, string[]>;
+      const firstError = Object.values(fieldErrors).flat()[0];
+      if (firstError) return firstError;
+    }
+
+    if (body?.error && typeof body.error === "string") return body.error;
+    return `Error HTTP ${res.status}`;
+  } catch {
+    try {
+      const text = await res.text();
+      return text || `Error HTTP ${res.status}`;
+    } catch {
+      return `Error HTTP ${res.status}`;
+    }
+  }
 };
 
 export const api = {
