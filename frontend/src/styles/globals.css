@@ -3,5 +3,6 @@
 @tailwind utilities;
 
 body {
-  @apply text-slate-800;
+  @apply bg-[#F5F5F5] text-[#111111];
+  font-family: Inter, system-ui, sans-serif;
 }
