@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 420 420" role="img" aria-label="Soluciones Eléctricas">
+  <rect width="420" height="420" fill="#ffffff"/>
+  <g fill="#0f0f10">
+    <path d="M64 115h158l-22 36H121l-15 24h84l-24 38H82c-20 0-31-23-21-40z"/>
+    <path d="M238 115h124l-8 36h-94l-8 24h89l-9 38h-116z"/>
+  </g>
+  <path d="M238 60l-92 170h47l-13 130 95-178h-49z" fill="#C8102E"/>
+  <text x="210" y="332" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800" fill="#0f0f10" letter-spacing="2">SOLUCIONES</text>
+  <text x="210" y="376" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="42" font-weight="800" fill="#0f0f10" letter-spacing="2">ELÉCTRICAS</text>
+</svg>

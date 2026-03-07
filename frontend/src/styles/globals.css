@@ -2,7 +2,20 @@
 @tailwind components;
 @tailwind utilities;
 
+* {
+  box-sizing: border-box;
+}
+
 body {
-  @apply bg-[#F5F5F5] text-[#111111];
+  @apply bg-brand-light text-brand-dark;
   font-family: Inter, system-ui, sans-serif;
+}
+
+input,
+textarea,
+button,
+select {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
 }

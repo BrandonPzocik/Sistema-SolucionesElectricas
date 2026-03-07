@@ -178,35 +178,35 @@ export const AdminPage = () => {
   };
 
   return (
-    <section className="space-y-6">
+    <section className="space-y-4 sm:space-y-6">
       <h2 className="text-2xl font-bold">Panel administrador</h2>
 
       <div className="flex gap-2 text-sm">
-        <Link to="/admin" className={`rounded-full px-4 py-2 font-semibold ${!isServicesRoute ? "bg-[#111111] text-white" : "border"}`}>
+        <Link to="/admin" className={`rounded-full px-4 py-2 font-semibold ${!isServicesRoute ? "bg-brand-red text-white" : "border border-brand-red text-brand-red"}`}>
           Productos
         </Link>
-        <Link to="/admin/services" className={`rounded-full px-4 py-2 font-semibold ${isServicesRoute ? "bg-[#111111] text-white" : "border"}`}>
+        <Link to="/admin/services" className={`rounded-full px-4 py-2 font-semibold ${isServicesRoute ? "bg-brand-red text-white" : "border border-brand-red text-brand-red"}`}>
           Servicios
         </Link>
       </div>
 
-      {feedback ? <p className="rounded-xl bg-white p-3 text-sm">{feedback}</p> : null}
+      {feedback ? <p className="rounded-xl border border-red-100 bg-white p-3 text-sm">{feedback}</p> : null}
 
       {!isServicesRoute ? (
         <>
-          <form onSubmit={submitProduct} className="grid gap-2 rounded-2xl bg-white p-4 shadow-sm">
-            <input className="rounded border p-2" placeholder="Nombre" value={productForm.nombre} onChange={(e) => setProductForm({ ...productForm, nombre: e.target.value })} required />
-            <textarea className="rounded border p-2" placeholder="Descripción" value={productForm.descripcion} onChange={(e) => setProductForm({ ...productForm, descripcion: e.target.value })} required />
-            <input className="rounded border p-2" type="number" placeholder="Precio" value={productForm.precio} onChange={(e) => setProductForm({ ...productForm, precio: e.target.value })} min={1} required />
-            <input className="rounded border p-2" type="number" placeholder="Stock" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })} min={0} required />
-            <input className="rounded border p-2" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "product")} />
-            <button disabled={createProduct.isPending || !!productValidationError} className="rounded bg-[#FFC107] py-2 font-bold disabled:opacity-60">Agregar producto</button>
+          <form onSubmit={submitProduct} className="grid gap-2 rounded-2xl border border-red-100 bg-white p-3 shadow-sm sm:p-4">
+            <input className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="Nombre" value={productForm.nombre} onChange={(e) => setProductForm({ ...productForm, nombre: e.target.value })} required />
+            <textarea className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="Descripción" value={productForm.descripcion} onChange={(e) => setProductForm({ ...productForm, descripcion: e.target.value })} required />
+            <input className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" type="number" placeholder="Precio" value={productForm.precio} onChange={(e) => setProductForm({ ...productForm, precio: e.target.value })} min={1} required />
+            <input className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" type="number" placeholder="Stock" value={productForm.stock} onChange={(e) => setProductForm({ ...productForm, stock: e.target.value })} min={0} required />
+            <input className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "product")} />
+            <button disabled={createProduct.isPending} className="rounded-xl bg-brand-red py-2.5 font-bold text-white disabled:opacity-60">Agregar producto</button>
           </form>
 
-          <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border border-red-100 bg-white p-3 shadow-sm sm:p-4">
             <h3 className="mb-2 font-bold">Productos ({products?.length ?? 0})</h3>
             {products?.map((product) => (
-              <div key={product.id} className="mb-2 flex items-center justify-between rounded border p-2">
+              <div key={product.id} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 p-2 text-sm">
                 <span>{product.nombre} - ${product.precio} - stock {product.stock}</span>
                 <button className="text-red-600" onClick={() => removeProduct(product.id)}>Eliminar</button>
               </div>
@@ -215,17 +215,17 @@ export const AdminPage = () => {
         </>
       ) : (
         <>
-          <form onSubmit={submitService} className="grid gap-2 rounded-2xl bg-white p-4 shadow-sm">
-            <input className="rounded border p-2" placeholder="Nombre del servicio" value={serviceForm.nombre} onChange={(e) => setServiceForm({ ...serviceForm, nombre: e.target.value })} required />
-            <textarea className="rounded border p-2" placeholder="Descripción" value={serviceForm.descripcion} onChange={(e) => setServiceForm({ ...serviceForm, descripcion: e.target.value })} required />
-            <input className="rounded border p-2" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "service")} />
-            <button disabled={createService.isPending || !!serviceValidationError} className="rounded bg-[#FFC107] py-2 font-bold disabled:opacity-60">Agregar servicio</button>
+          <form onSubmit={submitService} className="grid gap-2 rounded-2xl border border-red-100 bg-white p-3 shadow-sm sm:p-4">
+            <input className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="Nombre del servicio" value={serviceForm.nombre} onChange={(e) => setServiceForm({ ...serviceForm, nombre: e.target.value })} required />
+            <textarea className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" placeholder="Descripción" value={serviceForm.descripcion} onChange={(e) => setServiceForm({ ...serviceForm, descripcion: e.target.value })} required />
+            <input className="w-full rounded-xl border border-slate-300 px-3 py-2 text-sm" type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0], "service")} />
+            <button disabled={createService.isPending} className="rounded-xl bg-brand-red py-2.5 font-bold text-white disabled:opacity-60">Agregar servicio</button>
           </form>
 
-          <div className="rounded-2xl bg-white p-4 shadow-sm">
+          <div className="rounded-2xl border border-red-100 bg-white p-3 shadow-sm sm:p-4">
             <h3 className="mb-2 font-bold">Servicios ({services?.length ?? 0})</h3>
             {services?.map((service) => (
-              <div key={service.id} className="mb-2 flex items-center justify-between rounded border p-2">
+              <div key={service.id} className="mb-2 flex items-center justify-between gap-2 rounded-xl border border-slate-200 p-2 text-sm">
                 <span>{service.nombre}</span>
                 <button className="text-red-600" onClick={() => removeService(service.id)}>Eliminar</button>
               </div>

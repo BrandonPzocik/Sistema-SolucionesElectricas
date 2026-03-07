@@ -38,12 +38,12 @@ export const CatalogPage = () => {
       <h2 className="mb-4 text-2xl font-bold">Productos</h2>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {data?.map((product) => (
-          <article key={product.id} className="rounded-2xl bg-white p-4 shadow-sm">
+          <article key={product.id} className="rounded-2xl border border-red-100 bg-white p-3 shadow-sm sm:p-4">
             <img src={product.imagen} alt={product.nombre} className="aspect-square w-full rounded-xl object-cover" />
             <h3 className="mt-3 text-lg font-bold">{product.nombre}</h3>
             <p className="mt-1 line-clamp-2 text-sm text-slate-600">{product.descripcion}</p>
-            <p className="mt-2 text-xl font-extrabold text-[#111111]">${product.precio}</p>
-            <button className="mt-3 w-full rounded-xl bg-[#FFC107] py-3 font-bold" onClick={() => setSelected(product)}>Comprar</button>
+            <p className="mt-2 text-xl font-extrabold text-brand-red">${product.precio}</p>
+            <button className="mt-3 w-full rounded-xl bg-brand-red py-3 font-bold text-white" onClick={() => setSelected(product)}>Comprar</button>
           </article>
         ))}
       </div>
@@ -55,8 +55,8 @@ export const CatalogPage = () => {
             <p className="mb-4 text-sm text-slate-600">{selected.nombre} - ${selected.precio}</p>
             {checkoutError ? <p className="mb-3 rounded border border-red-200 bg-red-50 p-2 text-xs text-red-700">{checkoutError}</p> : null}
             <div className="space-y-2">
-              <button onClick={() => buyWithMercadoPago(selected)} className="w-full rounded-xl bg-[#111111] py-3 font-semibold text-white">Mercado Pago</button>
-              <a href={whatsappUrl(`Hola, quiero comprar el siguiente producto:\n\nProducto: ${selected.nombre}\nPrecio: ${selected.precio}\n\nQuiero pagar en efectivo.`)} className="block w-full rounded-xl border py-3 text-center font-semibold">Efectivo</a>
+              <button onClick={() => buyWithMercadoPago(selected)} className="w-full rounded-xl bg-brand-red py-3 font-semibold text-white">Mercado Pago</button>
+              <a href={whatsappUrl(`Hola, quiero comprar el siguiente producto:\n\nProducto: ${selected.nombre}\nPrecio: ${selected.precio}\n\nQuiero pagar en efectivo.`)} className="block w-full rounded-xl border border-brand-red py-3 text-center font-semibold text-brand-red">Efectivo</a>
               <button
                 onClick={() => {
                   setCheckoutError("");
