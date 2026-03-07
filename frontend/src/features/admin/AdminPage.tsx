@@ -97,15 +97,25 @@ export const AdminPage = () => {
   };
 
   const uploadImage = async (file: File, target: "product" | "service") => {
-    const signed = await api.post<{ token: string; path: string; publicUrl: string }>("/admin/storage/upload-url", { fileName: file.name, contentType: file.type }, headers);
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/storage/v1/upload/resumable/sign/${signed.path}?token=${signed.token}`, {
+    const signed = await api.post<{ token: string; signedUrl: string; path: string; bucket: string; publicUrl: string }>(
+      "/admin/storage/upload-url",
+      { fileName: file.name, contentType: file.type },
+      headers
+    );
+
+    const uploadUrl = signed.signedUrl.startsWith("http")
+      ? signed.signedUrl
+      : `${import.meta.env.VITE_SUPABASE_URL}${signed.signedUrl}`;
+
+    const response = await fetch(uploadUrl, {
       method: "PUT",
-      headers: { "Content-Type": file.type, "x-upsert": "true" },
+      headers: { "Content-Type": file.type },
       body: file
     });
 
     if (!response.ok) {
-      throw new Error("No se pudo subir la imagen a Supabase Storage");
+      const detail = await response.text().catch(() => "");
+      throw new Error(detail || "No se pudo subir la imagen a Supabase Storage");
     }
 
     if (target === "product") {

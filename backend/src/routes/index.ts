@@ -181,6 +181,12 @@ router.post(
     if (error) return res.status(400).json({ message: error.message });
 
     const { data: publicData } = supabaseAdmin.storage.from(env.SUPABASE_STORAGE_BUCKET).getPublicUrl(path);
-    return res.json({ ...data, path, publicUrl: publicData.publicUrl });
+    return res.json({
+      token: data.token,
+      signedUrl: data.signedUrl,
+      path,
+      bucket: env.SUPABASE_STORAGE_BUCKET,
+      publicUrl: publicData.publicUrl
+    });
   })
 );
