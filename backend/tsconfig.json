@@ -9,5 +9,15 @@
     "outDir": "dist",
     "rootDir": "src"
   },
-  "include": ["src"]
+  "include": [
+    "src/app.ts",
+    "src/server.ts",
+    "src/config/**/*.ts",
+    "src/middleware/auth.ts",
+    "src/middleware/errors.ts",
+    "src/middleware/security.ts",
+    "src/routes/**/*.ts",
+    "src/services/mercadoPago.ts",
+    "src/services/supabase.ts"
+  ]
 }
